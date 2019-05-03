@@ -1,28 +1,35 @@
 <html>
-
 	<head>
 		<title>Temperature logger</title>
-
+		
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 	</head>
 
 	<body onload="go()">
-
+		
 		<center>
 			<div id="table_div"style="width: 1200px; height: 1200px"></div>
+			<div id="curve_chart" style="width: 700px; height: 700px"></div>
 		</center>
-
+		
 		<script type='text/javascript'>
+			//load google charts
 			google.charts.load('current', {packages:['table']});
-			google.charts.load('current', { packages: ['corechart'] });
+			google.charts.load('current', {packages:['corechart']});
+//			google.charts.setOnLoadCallback(drawLineChart);
+
+			//empty array as global
 			var tableData = [];
+
 			function go(){
 				getData();
 				setInterval(function() {
 					getData();
 				}, 60000);
 			}
+
+		// Gets data from fetchData app.route and pushes it into an array
 			function getData(){
 				tableData = [];
 				$.getJSON('/fetchData', function(chartJSON) {
@@ -30,21 +37,40 @@
 						tableData.push([new Date(chartJSON[i].Date), chartJSON[i].Temperature]);
 					};
 					console.log(tableData);
-//					drawChart();
+					drawChart();
 					drawTable();
 				});
 			}
-	                function drawTable() {
-						var tdata = new google.visualization.DataTable();
-        					tdata.addColumn('datetime', 'Date');
-						tdata.addColumn('number', 'Temp');
+	        function drawTable() {
+					var tdata = new google.visualization.DataTable();
+        				tdata.addColumn('datetime', 'Date');
+						tdata.addColumn('number', 'Temp(°F)');
 						tdata.addRows(tableData);
-					        var table = new google.visualization.Table(document.getElementById('table_div'));
-       						table.draw(tdata, {showRowNumber: true, width: '100%', height: '100%'});
-                        }	
+				    var table = new google.visualization.Table(document.getElementById('table_div'));
+                        
+       				var options = {
+       					title:	'Temperature Log Table'
+       				}
+       					table.draw(tdata, {showRowNumber: true, width: '1000', height: '600'});
+
+                        }
+
+          // Draw the chart and set the chart values
+			function drawChart() {
+				  	var data = new google.visualization.DataTable();
+				  		data.addColumn('datetime','Date');
+				  		data.addColumn('number', 'Temp(°F)');
+				  		data.addRows(tableData)
+
+				  	var options = {
+				  		title: 'Temperature Log Chart'
+				  	};
+
+				  	var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+        			  	chart.draw(data, options);
+
+					  }
 		</script>
-
-
 	</body>
-
 </html>
